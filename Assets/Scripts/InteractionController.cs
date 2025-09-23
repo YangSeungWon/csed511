@@ -76,7 +76,7 @@ public class InteractionController : MonoBehaviour
                 }
 
                 heldObjectRigidbody.useGravity = false;
-                heldObjectRigidbody.linearDamping = 10;
+                heldObjectRigidbody.drag = 10;  // linearDamping -> drag
                 heldObjectRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
 
                 // 들고 있는 물체를 Ignore Raycast 레이어로 변경
@@ -97,7 +97,7 @@ public class InteractionController : MonoBehaviour
         if (currentHeldObject == null) return;
 
         heldObjectRigidbody.useGravity = true;
-        heldObjectRigidbody.linearDamping = 1;
+        heldObjectRigidbody.drag = 1;  // linearDamping -> drag
         heldObjectRigidbody.constraints = RigidbodyConstraints.None;
 
         // 물체를 원래 레이어로 되돌림 (Default)
@@ -119,7 +119,7 @@ public class InteractionController : MonoBehaviour
         if (currentHeldObject == null) return;
 
         heldObjectRigidbody.useGravity = true;
-        heldObjectRigidbody.linearDamping = 1;
+        heldObjectRigidbody.drag = 1;  // linearDamping -> drag
         heldObjectRigidbody.constraints = RigidbodyConstraints.None;
 
         // 물체를 원래 레이어로 되돌림 (Default)
@@ -144,7 +144,7 @@ public class InteractionController : MonoBehaviour
 
         Vector3 targetPosition = holdPosition.position;
         Vector3 direction = targetPosition - currentHeldObject.transform.position;
-        heldObjectRigidbody.linearVelocity = direction * 10f;
+        heldObjectRigidbody.velocity = direction * 10f;  // linearVelocity -> velocity
 
         currentHeldObject.transform.rotation = Quaternion.Euler(0, playerCamera.transform.eulerAngles.y, 0);
     }
