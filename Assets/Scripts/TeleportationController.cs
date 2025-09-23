@@ -19,7 +19,6 @@ public class TeleportationController : MonoBehaviour
     {
         playerCamera = GetComponentInChildren<Camera>();
         CreateTeleportIndicator();
-        CreateTeleportLine();
     }
 
     void CreateTeleportIndicator()
@@ -31,15 +30,12 @@ public class TeleportationController : MonoBehaviour
             teleportIndicator.transform.localScale = new Vector3(1f, 0.1f, 1f);
 
             Renderer renderer = teleportIndicator.GetComponent<Renderer>();
-            Material material = new Material(Shader.Find("Standard"));
-            material.color = new Color(0, 1, 0, 0.5f);
-            material.SetFloat("_Mode", 3);
-            material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            material.SetInt("_ZWrite", 0);
-            material.DisableKeyword("_ALPHATEST_ON");
-            material.EnableKeyword("_ALPHABLEND_ON");
-            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            Material material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            material.color = new Color(0, 1, 0, 0.5f);  // 녹색 반투명
+            
+            // URP 투명도 설정
+            material.SetFloat("_Surface", 1); // 0 = Opaque, 1 = Transparent
+            material.SetFloat("_Blend", 0);   // 0 = Alpha, 1 = Premultiply, 2 = Additive, 3 = Multiply
             material.renderQueue = 3000;
             renderer.material = material;
 
@@ -54,29 +50,13 @@ public class TeleportationController : MonoBehaviour
         teleportIndicator.SetActive(false);
     }
 
-    void CreateTeleportLine()
-    {
-        if (teleportLine == null)
-        {
-            GameObject lineObject = new GameObject("Teleport Line");
-            lineObject.transform.parent = transform;
-            teleportLine = lineObject.AddComponent<LineRenderer>();
 
-            Material lineMaterial = new Material(Shader.Find("Sprites/Default"));
-            teleportLine.material = lineMaterial;
-            teleportLine.startWidth = 0.05f;
-            teleportLine.endWidth = 0.05f;
-            teleportLine.positionCount = 2;
-        }
-
-        teleportLine.enabled = false;
-    }
 
     void Update()
     {
         ShowTeleportPreview();
 
-        if (Input.GetMouseButtonDown(0) && canTeleport && Cursor.lockState != CursorLockMode.Locked)
+        if (Input.GetMouseButtonDown(0) && canTeleport)
         {
             PerformTeleport();
         }
@@ -95,12 +75,6 @@ public class TeleportationController : MonoBehaviour
             teleportIndicator.SetActive(true);
             teleportIndicator.transform.position = teleportDestination + Vector3.up * 0.05f;
 
-            teleportLine.enabled = true;
-            teleportLine.SetPosition(0, playerCamera.transform.position);
-            teleportLine.SetPosition(1, teleportDestination);
-            teleportLine.startColor = validTeleportColor;
-            teleportLine.endColor = validTeleportColor;
-
             Renderer indicatorRenderer = teleportIndicator.GetComponent<Renderer>();
             if (indicatorRenderer != null)
             {
@@ -111,7 +85,6 @@ public class TeleportationController : MonoBehaviour
         {
             canTeleport = false;
             teleportIndicator.SetActive(false);
-            teleportLine.enabled = false;
         }
     }
 
@@ -132,7 +105,6 @@ public class TeleportationController : MonoBehaviour
         }
 
         teleportIndicator.SetActive(false);
-        teleportLine.enabled = false;
         canTeleport = false;
     }
 }
