@@ -79,6 +79,9 @@ public class InteractionController : MonoBehaviour
                 heldObjectRigidbody.linearDamping = 10;
                 heldObjectRigidbody.constraints = RigidbodyConstraints.FreezeRotation;
 
+                // 들고 있는 물체를 Ignore Raycast 레이어로 변경
+                currentHeldObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+
                 if (heldObjectCollider != null)
                 {
                     Physics.IgnoreCollision(GetComponent<Collider>(), heldObjectCollider, true);
@@ -96,6 +99,9 @@ public class InteractionController : MonoBehaviour
         heldObjectRigidbody.useGravity = true;
         heldObjectRigidbody.linearDamping = 1;
         heldObjectRigidbody.constraints = RigidbodyConstraints.None;
+
+        // 물체를 원래 레이어로 되돌림 (Default)
+        currentHeldObject.layer = LayerMask.NameToLayer("Default");
 
         if (heldObjectCollider != null && GetComponent<Collider>() != null)
         {
@@ -115,6 +121,9 @@ public class InteractionController : MonoBehaviour
         heldObjectRigidbody.useGravity = true;
         heldObjectRigidbody.linearDamping = 1;
         heldObjectRigidbody.constraints = RigidbodyConstraints.None;
+
+        // 물체를 원래 레이어로 되돌림 (Default)
+        currentHeldObject.layer = LayerMask.NameToLayer("Default");
 
         if (heldObjectCollider != null && GetComponent<Collider>() != null)
         {
