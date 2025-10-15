@@ -15,8 +15,17 @@ public class VRTriggerStateMonitor : MonoBehaviour
         FullyPressed
     }
 
-    public TriggerState LeftTriggerState { get; private set; } = TriggerState.NotPressed;
-    public TriggerState RightTriggerState { get; private set; } = TriggerState.NotPressed;
+    // Index trigger (Activate Action)
+    public TriggerState LeftIndexTriggerState { get; private set; } = TriggerState.NotPressed;
+    public TriggerState RightIndexTriggerState { get; private set; } = TriggerState.NotPressed;
+
+    // Grip button (Select Action)
+    public TriggerState LeftGripState { get; private set; } = TriggerState.NotPressed;
+    public TriggerState RightGripState { get; private set; } = TriggerState.NotPressed;
+
+    // Backwards compatibility
+    public TriggerState LeftTriggerState => LeftIndexTriggerState;
+    public TriggerState RightTriggerState => RightIndexTriggerState;
 
     [Header("Trigger Thresholds")]
     [SerializeField] private float halfPressThreshold = 0.3f;
@@ -31,14 +40,24 @@ public class VRTriggerStateMonitor : MonoBehaviour
     {
         if (leftController != null)
         {
-            float leftValue = leftController.activateActionValue.action?.ReadValue<float>() ?? 0f;
-            LeftTriggerState = GetTriggerState(leftValue);
+            // Index trigger (Activate)
+            float leftActivateValue = leftController.activateActionValue.action?.ReadValue<float>() ?? 0f;
+            LeftIndexTriggerState = GetTriggerState(leftActivateValue);
+
+            // Grip button (Select)
+            float leftSelectValue = leftController.selectActionValue.action?.ReadValue<float>() ?? 0f;
+            LeftGripState = GetTriggerState(leftSelectValue);
         }
 
         if (rightController != null)
         {
-            float rightValue = rightController.activateActionValue.action?.ReadValue<float>() ?? 0f;
-            RightTriggerState = GetTriggerState(rightValue);
+            // Index trigger (Activate)
+            float rightActivateValue = rightController.activateActionValue.action?.ReadValue<float>() ?? 0f;
+            RightIndexTriggerState = GetTriggerState(rightActivateValue);
+
+            // Grip button (Select)
+            float rightSelectValue = rightController.selectActionValue.action?.ReadValue<float>() ?? 0f;
+            RightGripState = GetTriggerState(rightSelectValue);
         }
     }
 
@@ -65,5 +84,17 @@ public class VRTriggerStateMonitor : MonoBehaviour
             default:
                 return "Unknown";
         }
+    }
+
+    public string GetLeftControllerStateString()
+    {
+        return $"Trigger: {GetTriggerStateString(LeftIndexTriggerState)}\n" +
+               $"Grip: {GetTriggerStateString(LeftGripState)}";
+    }
+
+    public string GetRightControllerStateString()
+    {
+        return $"Trigger: {GetTriggerStateString(RightIndexTriggerState)}\n" +
+               $"Grip: {GetTriggerStateString(RightGripState)}";
     }
 }

@@ -30,16 +30,24 @@ public class VRUIManager : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("VRUIManager Start()");
+
         // Setup speed button
         if (speedButton != null)
         {
             speedButton.onClick.AddListener(OnSpeedButtonClicked);
+            Debug.Log("Speed button listener added");
+        }
+        else
+        {
+            Debug.LogWarning("Speed button is not assigned!");
         }
 
         // Setup clear button
         if (clearButton != null)
         {
             clearButton.onClick.AddListener(OnClearButtonClicked);
+            Debug.Log("Clear button listener added");
         }
 
         // Create spawner buttons dynamically
@@ -59,14 +67,12 @@ public class VRUIManager : MonoBehaviour
 
         if (leftTriggerText != null)
         {
-            string leftState = triggerMonitor.GetTriggerStateString(triggerMonitor.LeftTriggerState);
-            leftTriggerText.text = $"Left: {leftState}";
+            leftTriggerText.text = $"Left Controller:\n{triggerMonitor.GetLeftControllerStateString()}";
         }
 
         if (rightTriggerText != null)
         {
-            string rightState = triggerMonitor.GetTriggerStateString(triggerMonitor.RightTriggerState);
-            rightTriggerText.text = $"Right: {rightState}";
+            rightTriggerText.text = $"Right Controller:\n{triggerMonitor.GetRightControllerStateString()}";
         }
     }
 
@@ -86,9 +92,15 @@ public class VRUIManager : MonoBehaviour
 
     private void OnSpeedButtonClicked()
     {
+        Debug.Log("Speed Button Clicked!");
         if (speedController != null)
         {
             speedController.CycleSpeed();
+            Debug.Log($"Speed changed to: {speedController.CurrentSpeedName}");
+        }
+        else
+        {
+            Debug.LogWarning("Speed Controller is null!");
         }
     }
 
