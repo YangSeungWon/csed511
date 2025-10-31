@@ -6,12 +6,15 @@ public class Bullet : MonoBehaviour
     [SerializeField] private float speed = 20f;
     [SerializeField] private float lifetime = 10f;
     [SerializeField] private int scoreValue = 10; // Points awarded when this bullet hits a target
+    [SerializeField] private float invincibilityTime = 0.1f; // Time before bullet can collide with objects
 
     [Header("Bullet Type")]
     public BulletColor bulletColor = BulletColor.White;
 
     private Rigidbody rb;
+    private Collider bulletCollider;
     private float spawnTime;
+    private bool isInvincible = true;
 
     public enum BulletColor
     {
@@ -31,6 +34,13 @@ public class Bullet : MonoBehaviour
         // Configure Rigidbody
         rb.useGravity = false;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+        // Get collider and disable it initially for invincibility period
+        bulletCollider = GetComponent<Collider>();
+        if (bulletCollider != null)
+        {
+            bulletCollider.enabled = false;
+        }
     }
 
     void Start()
@@ -57,6 +67,16 @@ public class Bullet : MonoBehaviour
 
     void Update()
     {
+        // Enable collider after invincibility time
+        if (isInvincible && Time.time - spawnTime >= invincibilityTime)
+        {
+            isInvincible = false;
+            if (bulletCollider != null)
+            {
+                bulletCollider.enabled = true;
+            }
+        }
+
         // Self-destruct after lifetime expires
         if (Time.time - spawnTime >= lifetime)
         {

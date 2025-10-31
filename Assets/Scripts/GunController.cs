@@ -31,6 +31,10 @@ public class GunController : MonoBehaviour
     private ActionBasedController currentController; // Controller currently holding the gun
     private bool isTriggerPressed = false;
 
+    // Store disabled interactors to re-enable them when gun is released
+    private XRRayInteractor rayInteractor;
+    private XRDirectInteractor directInteractor;
+
     void Awake()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
@@ -221,6 +225,9 @@ public class GunController : MonoBehaviour
         {
             currentController = controllerInteractor.GetComponent<ActionBasedController>();
             Debug.Log($"{bulletColor} gun grabbed by {currentController.name}");
+
+            // Disable other interactors on this controller to prevent teleporting or grabbing other objects
+            DisableOtherInteractors(controllerInteractor.transform);
         }
     }
 
@@ -229,6 +236,9 @@ public class GunController : MonoBehaviour
     /// </summary>
     private void OnReleased(SelectExitEventArgs args)
     {
+        // Re-enable other interactors
+        EnableOtherInteractors();
+
         currentController = null;
         isTriggerPressed = false;
         Debug.Log($"{bulletColor} gun released");
@@ -248,5 +258,49 @@ public class GunController : MonoBehaviour
     public Bullet.BulletColor GetBulletColor()
     {
         return bulletColor;
+    }
+
+    /// <summary>
+    /// Disable other interactors on the controller to prevent teleporting or grabbing while holding gun
+    /// </summary>
+    private void DisableOtherInteractors(Transform controllerTransform)
+    {
+        // Find and disable Ray Interactor (used for teleportation and UI)
+        rayInteractor = controllerTransform.GetComponentInChildren<XRRayInteractor>();
+        if (rayInteractor != null)
+        {
+            rayInteractor.enabled = false;
+            Debug.Log($"Disabled Ray Interactor on {controllerTransform.name}");
+        }
+
+        // Find and disable Direct Interactor (used for grabbing nearby objects)
+        directInteractor = controllerTransform.GetComponentInChildren<XRDirectInteractor>();
+        if (directInteractor != null)
+        {
+            directInteractor.enabled = false;
+            Debug.Log($"Disabled Direct Interactor on {controllerTransform.name}");
+        }
+    }
+
+    /// <summary>
+    /// Re-enable other interactors when gun is released
+    /// </summary>
+    private void EnableOtherInteractors()
+    {
+        // Re-enable Ray Interactor
+        if (rayInteractor != null)
+        {
+            rayInteractor.enabled = true;
+            Debug.Log("Re-enabled Ray Interactor");
+            rayInteractor = null;
+        }
+
+        // Re-enable Direct Interactor
+        if (directInteractor != null)
+        {
+            directInteractor.enabled = true;
+            Debug.Log("Re-enabled Direct Interactor");
+            directInteractor = null;
+        }
     }
 }
