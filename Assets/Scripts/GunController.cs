@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.InputSystem;
+using UnityEngine.XR;
 
 [RequireComponent(typeof(XRGrabInteractable))]
 public class GunController : MonoBehaviour
@@ -34,6 +35,7 @@ public class GunController : MonoBehaviour
     // Store disabled interactors to re-enable them when gun is released
     private XRRayInteractor rayInteractor;
     private XRDirectInteractor directInteractor;
+    private XRBaseInteractor grabbingInteractor; // The interactor currently holding this gun
 
     void Awake()
     {
@@ -198,8 +200,54 @@ public class GunController : MonoBehaviour
     {
         if (currentController != null)
         {
-            // Send haptic impulse to controller
+            // Method 1: Try ActionBasedController (XR Interaction Toolkit)
             currentController.SendHapticImpulse(hapticIntensity, hapticDuration);
+            Debug.Log($"Haptic feedback sent via ActionBasedController: intensity={hapticIntensity}, duration={hapticDuration}");
+
+            // Method 2: Also try direct InputDevice API (more reliable for Quest)
+            TriggerHapticViaInputDevice();
+        }
+        else
+        {
+            Debug.LogWarning("Cannot send haptic feedback: currentController is null!");
+        }
+    }
+
+    /// <summary>
+    /// Trigger haptic via low-level InputDevice API (more reliable for Meta Quest)
+    /// </summary>
+    private void TriggerHapticViaInputDevice()
+    {
+        // Determine which hand is holding the gun
+        XRNode node = XRNode.RightHand; // Default to right
+        if (currentController != null && currentController.name.ToLower().Contains("left"))
+        {
+            node = XRNode.LeftHand;
+        }
+
+        // Get the input device for this hand (explicitly use UnityEngine.XR.InputDevice)
+        UnityEngine.XR.InputDevice device = InputDevices.GetDeviceAtXRNode(node);
+
+        if (device.isValid)
+        {
+            HapticCapabilities capabilities;
+            if (device.TryGetHapticCapabilities(out capabilities))
+            {
+                if (capabilities.supportsImpulse)
+                {
+                    uint channel = 0; // Oculus uses channel 0
+                    device.SendHapticImpulse(channel, hapticIntensity, hapticDuration);
+                    Debug.Log($"Haptic sent via InputDevice to {node}: intensity={hapticIntensity}, duration={hapticDuration}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Device {device.name} does not support haptic impulse!");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"InputDevice for {node} is not valid!");
         }
     }
 
@@ -224,11 +272,11 @@ public class GunController : MonoBehaviour
         if (args.interactorObject is XRBaseControllerInteractor controllerInteractor)
         {
             currentController = controllerInteractor.GetComponent<ActionBasedController>();
+            grabbingInteractor = controllerInteractor;
             Debug.Log($"{bulletColor} gun grabbed by {currentController.name}");
 
             // Disable other interactors on this controller to prevent teleporting or grabbing other objects
-            // TEMPORARILY DISABLED FOR TESTING
-            // DisableOtherInteractors(controllerInteractor.transform);
+            DisableOtherInteractors(controllerInteractor.transform);
         }
     }
 
@@ -238,10 +286,10 @@ public class GunController : MonoBehaviour
     private void OnReleased(SelectExitEventArgs args)
     {
         // Re-enable other interactors
-        // TEMPORARILY DISABLED FOR TESTING
-        // EnableOtherInteractors();
+        EnableOtherInteractors();
 
         currentController = null;
+        grabbingInteractor = null;
         isTriggerPressed = false;
         Debug.Log($"{bulletColor} gun released");
     }
@@ -268,19 +316,29 @@ public class GunController : MonoBehaviour
     private void DisableOtherInteractors(Transform controllerTransform)
     {
         // Find and disable Ray Interactor (used for teleportation and UI)
+        // But DON'T disable the interactor currently holding the gun
         rayInteractor = controllerTransform.GetComponentInChildren<XRRayInteractor>();
-        if (rayInteractor != null)
+        if (rayInteractor != null && rayInteractor != grabbingInteractor)
         {
             rayInteractor.enabled = false;
             Debug.Log($"Disabled Ray Interactor on {controllerTransform.name}");
         }
+        else if (rayInteractor == grabbingInteractor)
+        {
+            rayInteractor = null; // Don't track it since we're not disabling it
+        }
 
         // Find and disable Direct Interactor (used for grabbing nearby objects)
+        // But DON'T disable the interactor currently holding the gun
         directInteractor = controllerTransform.GetComponentInChildren<XRDirectInteractor>();
-        if (directInteractor != null)
+        if (directInteractor != null && directInteractor != grabbingInteractor)
         {
             directInteractor.enabled = false;
             Debug.Log($"Disabled Direct Interactor on {controllerTransform.name}");
+        }
+        else if (directInteractor == grabbingInteractor)
+        {
+            directInteractor = null; // Don't track it since we're not disabling it
         }
     }
 
