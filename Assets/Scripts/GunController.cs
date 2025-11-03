@@ -227,7 +227,8 @@ public class GunController : MonoBehaviour
             Debug.Log($"{bulletColor} gun grabbed by {currentController.name}");
 
             // Disable other interactors on this controller to prevent teleporting or grabbing other objects
-            DisableOtherInteractors(controllerInteractor.transform);
+            // TEMPORARILY DISABLED FOR TESTING
+            // DisableOtherInteractors(controllerInteractor.transform);
         }
     }
 
@@ -237,7 +238,8 @@ public class GunController : MonoBehaviour
     private void OnReleased(SelectExitEventArgs args)
     {
         // Re-enable other interactors
-        EnableOtherInteractors();
+        // TEMPORARILY DISABLED FOR TESTING
+        // EnableOtherInteractors();
 
         currentController = null;
         isTriggerPressed = false;
