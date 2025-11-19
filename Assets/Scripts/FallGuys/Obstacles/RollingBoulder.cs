@@ -67,10 +67,10 @@ public class RollingBoulder : MonoBehaviour
         if (!usePhysics)
         {
             MoveAlongWaypoints();
+            // Rotate for rolling effect (non-physics mode only)
+            transform.Rotate(Vector3.right, rotationSpeed * Time.deltaTime, Space.Self);
         }
-
-        // Rotate for rolling effect
-        transform.Rotate(Vector3.right, rotationSpeed * Time.deltaTime, Space.Self);
+        // If usePhysics is true, Rigidbody handles rotation automatically
     }
 
     void FixedUpdate()
@@ -78,12 +78,10 @@ public class RollingBoulder : MonoBehaviour
         if (!isActive || !usePhysics || rb == null)
             return;
 
-        // Physics-based movement
-        if (waypoints != null && waypoints.Length > 0)
-        {
-            Vector3 direction = (waypoints[currentWaypoint].position - transform.position).normalized;
-            rb.AddForce(direction * moveSpeed, ForceMode.Force);
-        }
+        // Physics-based movement - pure gravity rolling
+        // No waypoint forces - let gravity do the work on the slope
+        // Optional: add small forward push if needed
+        // rb.AddForce(Vector3.forward * moveSpeed * 0.1f, ForceMode.Force);
     }
 
     /// <summary>

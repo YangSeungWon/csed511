@@ -28,11 +28,8 @@ public class RotatingGround : MonoBehaviour
     {
         startPosition = transform.position;
 
-        // Tag as obstacle
-        if (!gameObject.CompareTag("Obstacle"))
-        {
-            gameObject.tag = "Obstacle";
-        }
+        // NOTE: This is a platform, NOT an obstacle
+        // Do NOT tag as "Obstacle" - platforms should not trigger knockback/haptics
 
         // Apply slippery material if available
         if (slipperyMaterial != null)
@@ -50,7 +47,7 @@ public class RotatingGround : MonoBehaviour
         // Handle rotation
         if (enableRotation)
         {
-            transform.Rotate(rotationAxis.normalized, rotationSpeed * Time.deltaTime, Space.World);
+            transform.Rotate(rotationAxis.normalized, rotationSpeed * Time.deltaTime, Space.Self);
         }
 
         // Handle movement

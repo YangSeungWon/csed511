@@ -57,6 +57,17 @@ public class ObstacleCollisionHandler : MonoBehaviour
     /// </summary>
     private void HandleObstacleCollision(ControllerColliderHit hit)
     {
+        // Check if it's a breakable wall
+        BreakableWall breakableWall = hit.gameObject.GetComponent<BreakableWall>();
+        if (breakableWall != null)
+        {
+            // Calculate collision force from player velocity
+            float collisionForce = characterController != null ? characterController.velocity.magnitude : 0f;
+
+            // Try to break the wall (will check threshold internally)
+            breakableWall.TryBreak(collisionForce);
+        }
+
         // Apply knockback
         ApplyKnockback(hit.normal);
 

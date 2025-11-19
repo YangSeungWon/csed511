@@ -64,7 +64,13 @@ public class VRCharacterController : MonoBehaviour
     private void CheckGrounded()
     {
         Vector3 rayStart = transform.position;
-        isGrounded = Physics.Raycast(rayStart, Vector3.down, groundCheckDistance, groundLayer);
+        bool raycastGrounded = Physics.Raycast(rayStart, Vector3.down, groundCheckDistance, groundLayer);
+
+        // Also check CharacterController's built-in grounded (works better on moving platforms)
+        bool controllerGrounded = characterController.isGrounded;
+
+        // Player is grounded if either method detects ground
+        isGrounded = raycastGrounded || controllerGrounded;
 
         // Reset vertical velocity when grounded
         if (isGrounded && verticalVelocity < 0)
